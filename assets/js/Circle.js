@@ -10,10 +10,13 @@ export default class Circle extends Shape {
     this.#color = color;
   }
 
-  draw(canvas) {
-    let svg = document.createElement("svg");
-    svg.width = "300px";
-    svg.height = "300px";
-    canvas.appendChild(svg);
+  draw(svg) {
+    let circle = document.createElementNS(this.namespace, 'circle');
+    circle.setAttribute("cx", this.x);
+    circle.setAttribute("cy", this.y);
+    circle.setAttribute("r", this.#radius);
+    circle.setAttribute("fill", this.#color);
+    svg.appendChild(circle);
+    this.element = circle;
   }
 }

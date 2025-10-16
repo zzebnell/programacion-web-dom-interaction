@@ -7,6 +7,7 @@ export default class Shape {
     this.#x = x;
     this.#y = y;
     this.#element = null;
+    this.namespace = "http://www.w3.org/2000/svg";
   }
 
   get x() {
@@ -17,8 +18,8 @@ export default class Shape {
     return this.#y;
   }
 
-  get element() {
-    return this.#element;
+  set element(reference) {
+    this.#element = reference;
   }
 
 }
