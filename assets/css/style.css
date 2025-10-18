@@ -5,6 +5,11 @@
   --green: #98971a;
   --yellow: #d79921;
   --gray: #7c6f64;
+  --blue: #458588;
+  --dark-blue: #076678;
+  
+  --toolbar-bg: #282828;
+  --toolbar-fg: #ebdbb2;
 }
 
 * {
@@ -21,12 +26,64 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .toolbar {
   width: 100%;
   height: 70px;
-  background-color: var(--fg);
+  background-color: var(--toolbar-bg);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 30px;
+  border-bottom: 2px solid var(--gray);
+}
+
+.tool-group {
+  display: flex;
+  gap: 10px;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--toolbar-bg);
+  color: var(--toolbar-fg);
+  border: 2px solid var(--gray);
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+  min-width: 70px;
+  transition: all 0.1s ease-out;
+  height: 50px;
+}
+
+.tool-btn:hover {
+  background-color: var(--dark-blue);
+  border-color: var(--blue);
+  transform: translateY(-2px);
+}
+
+.tool-btn.active {
+  background-color: var(--green);
+  border-color: var(--green);
+  color: var(--toolbar-bg);
+}
+
+.tool-icon {
+  font-size: 18px;
+  margin-bottom: 2px;
+}
+
+.tool-label {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .diagram-container {
@@ -37,14 +94,89 @@ body {
 #canvas {
   background-color: var(--bg);
   flex: 1;
+  position: relative;
+  overflow: hidden;
 }
 
 #svg-canvas {
   width: 100%;
   height: 100%;
+  cursor: default;
+}
+
+#svg-canvas.select-mode {
+  cursor: default;
+}
+
+#svg-canvas.process-mode {
+  cursor: crosshair;
+}
+
+#svg-canvas.decision-mode {
+  cursor: crosshair;
+}
+
+#svg-canvas.input_output-mode {
+  cursor: crosshair;
+}
+
+#svg-canvas.connect-mode {
+  cursor: pointer;
 }
 
 .sidebar {
   width: 300px;
   background-color: var(--gray);
+  color: var(--toolbar-fg);
+  padding: 15px;
+}
+
+.status-bar {
+  background-color: var(--toolbar-bg);
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+/* Estilos para las formas */
+.shape {
+  cursor: move;
+  transition: filter 0.2s ease-out;
+}
+
+.shape:hover {
+  filter: brightness(0.9);
+}
+
+.shape.selected {
+  filter: brightness(0.8);
+  stroke: var(--blue);
+  stroke-width: 3;
+}
+
+.shape-text {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  pointer-events: none;
+  user-select: none;
+}
+
+.connection {
+  cursor: pointer;
+}
+
+.connection:hover {
+  stroke: var(--blue);
+  stroke-width: 3;
+}
+
+.temp-connection {
+  pointer-events: none;
+}
+
+.shape.selected {
+  stroke: var(--blue) !important;
+  stroke-width: 3 !important;
+  filter: drop-shadow(0 0 5px rgba(69, 133, 136, 0.5));
 }

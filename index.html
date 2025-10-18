@@ -1,22 +1,75 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="utf-8">
-    <title>Diagram Editor</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-  </head>
-  <body>
-    <div class="toolbar">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <title>Diagram Editor</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+  <div class="toolbar">
+    <div class="tool-group">
+      <button id="btn-select" class="tool-btn active" data-tool="select" title="Seleccionar">
+        <span class="tool-icon">↦</span>
+        <span class="tool-label">Seleccionar</span>
+      </button>
+      <button id="btn-process" class="tool-btn" data-tool="process" title="Proceso">
+        <span class="tool-icon">□</span>
+        <span class="tool-label">Proceso</span>
+      </button>
+      <button id="btn-decision" class="tool-btn" data-tool="decision" title="Decisión">
+        <span class="tool-icon">◇</span>
+        <span class="tool-label">Decisión</span>
+      </button>
+      <button id="btn-input-output" class="tool-btn" data-tool="input_output" title="Entrada/Salida">
+        <span class="tool-icon">▰</span>
+        <span class="tool-label">E/S</span>
+      </button>
     </div>
-    <div class="diagram-container">
-      <div id="canvas">
-        <svg id="svg-canvas">
-        </svg>
-      </div>
-      <div class="sidebar"> 
+
+    <div class="tool-group">
+      <button id="btn-connect" class="tool-btn" data-tool="connect" title="Conectar">
+        <span class="tool-icon">⇄</span>
+        <span class="tool-label">Conectar</span>
+      </button>
+      <button id="btn-delete" class="tool-btn" data-tool="delete" title="Eliminar">
+        <span class="tool-icon">×</span>
+        <span class="tool-label">Eliminar</span>
+      </button>
+    </div>
+
+    <div class="tool-group">
+      <button id="btn-save" class="tool-btn" data-tool="save" title="Guardar">
+        <span class="tool-icon">💾</span>
+        <span class="tool-label">Guardar</span>
+      </button>
+      <button id="btn-load" class="tool-btn" data-tool="load" title="Cargar">
+        <span class="tool-icon">📂</span>
+        <span class="tool-label">Cargar</span>
+      </button>
+      <button id="btn-export" class="tool-btn" data-tool="export" title="Exportar JSON">
+        <span class="tool-icon">📥</span>
+        <span class="tool-label">Exportar</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="diagram-container">
+    <div id="canvas">
+      <svg id="svg-canvas">
+      </svg>
+    </div>
+
+    <div class="sidebar">
+      <div class="status-bar">
+        <span id="current-tool">Herramienta: Seleccionar</span>
       </div>
     </div>
-    <script src="assets/js/App.js" type="module"></script>
-  </body>
+  </div>
+
+  <script src="assets/js/App.js" type="module"></script>
+</body>
+
 </html>
