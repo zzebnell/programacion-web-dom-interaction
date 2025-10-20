@@ -37,7 +37,6 @@ export default class Connection {
   }
 
   draw(svg) {
-    // Crear línea de conexión
     const line = document.createElementNS(this.namespace, 'line');
     const startPoint = this.#source.getConnectionPoints().bottom;
     const endPoint = this.#target.getConnectionPoints().top;
@@ -55,17 +54,14 @@ export default class Connection {
     svg.appendChild(line);
     this.#element = line;
 
-    // Agregar esta conexión a las formas
     this.#source.addConnection(this);
     this.#target.addConnection(this);
   }
 
   update() {
     if (!this.#element) return;
-
     const startPoint = this.#source.getConnectionPoints().bottom;
     const endPoint = this.#target.getConnectionPoints().top;
-
     this.#element.setAttribute("x1", startPoint.x);
     this.#element.setAttribute("y1", startPoint.y);
     this.#element.setAttribute("x2", endPoint.x);
@@ -76,8 +72,6 @@ export default class Connection {
     if (this.#element) {
       this.#element.remove();
     }
-
-    // Remover de las formas
     this.#source.removeConnection(this);
     this.#target.removeConnection(this);
   }

@@ -3,8 +3,6 @@ export default class ToolbarManager {
     this.diagramManager = diagramManager;
     this.activeTool = 'select';
     this.toolButtons = {};
-    this.statusElement = document.getElementById('current-tool');
-
     this.init();
   }
 
@@ -15,7 +13,6 @@ export default class ToolbarManager {
   }
 
   setupToolButtons() {
-    // Mapear todos los botones de herramientas
     const buttons = document.querySelectorAll('.tool-btn');
     buttons.forEach(button => {
       const tool = button.getAttribute('data-tool');
@@ -24,47 +21,38 @@ export default class ToolbarManager {
   }
 
   setupEventListeners() {
-    // Event listeners para los botones de herramientas
     Object.keys(this.toolButtons).forEach(tool => {
       this.toolButtons[tool].addEventListener('click', () => {
         this.setActiveTool(tool);
       });
     });
 
-    // Event listener para teclas rápidas
     document.addEventListener('keydown', (e) => {
       this.handleKeyboardShortcuts(e);
     });
   }
 
   setActiveTool(tool) {
-    // Remover clase active de todos los botones
     Object.values(this.toolButtons).forEach(button => {
       button.classList.remove('active');
     });
 
-    // Agregar clase active al botón seleccionado
     this.toolButtons[tool].classList.add('active');
     this.activeTool = tool;
 
-    // Actualizar el modo del cursor en el SVG
     this.updateCursorMode();
 
-    // Notificar al diagram manager
     this.diagramManager.setTool(tool);
 
-    // Actualizar la barra de estado
     this.updateStatus();
   }
 
   updateCursorMode() {
     const svg = document.getElementById('svg-canvas');
 
-    // Remover todas las clases de modo
     svg.classList.remove('select-mode', 'process-mode', 'decision-mode',
       'input_output-mode', 'connect-mode');
 
-    // Agregar la clase correspondiente al modo actual
     svg.classList.add(`${this.activeTool}-mode`);
   }
 
@@ -80,12 +68,9 @@ export default class ToolbarManager {
       'load': 'Cargar',
       'export': 'Exportar'
     };
-
-    this.statusElement.textContent = `Herramienta: ${toolNames[this.activeTool]}`;
   }
 
   handleKeyboardShortcuts(event) {
-    // Solo procesar si no estamos en un campo de texto
     if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
       return;
     }

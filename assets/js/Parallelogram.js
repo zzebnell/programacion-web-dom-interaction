@@ -8,7 +8,6 @@ export default class Parallelogram extends Shape {
   draw(svg) {
     const points = this.getParallelogramPoints();
 
-    // Crear paralelogramo
     const parallelogram = document.createElementNS(this.namespace, 'polygon');
     parallelogram.setAttribute("points", points.map(p => p.join(',')).join(' '));
     parallelogram.setAttribute("fill", "#ffffff");
@@ -17,7 +16,6 @@ export default class Parallelogram extends Shape {
     parallelogram.setAttribute("class", "shape input-output");
     parallelogram.setAttribute("data-id", this.id);
 
-    // Crear texto
     const textElement = document.createElementNS(this.namespace, 'text');
     textElement.setAttribute("x", this.x + this.width / 2);
     textElement.setAttribute("y", this.y + this.height / 2);

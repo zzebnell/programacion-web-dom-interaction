@@ -6,7 +6,6 @@ export default class Rectangle extends Shape {
   }
 
   draw(svg) {
-    // Crear rectángulo
     const rect = document.createElementNS(this.namespace, 'rect');
     rect.setAttribute("x", this.x);
     rect.setAttribute("y", this.y);
@@ -19,7 +18,6 @@ export default class Rectangle extends Shape {
     rect.setAttribute("class", "shape process");
     rect.setAttribute("data-id", this.id);
 
-    // Crear texto
     const textElement = document.createElementNS(this.namespace, 'text');
     textElement.setAttribute("x", this.x + this.width / 2);
     textElement.setAttribute("y", this.y + this.height / 2);
@@ -29,7 +27,6 @@ export default class Rectangle extends Shape {
     textElement.textContent = this.text;
     textElement.setAttribute("class", "shape-text");
 
-    // Agregar al SVG
     const group = document.createElementNS(this.namespace, 'g');
     group.appendChild(rect);
     group.appendChild(textElement);

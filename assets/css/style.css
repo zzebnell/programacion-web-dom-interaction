@@ -124,20 +124,6 @@ body {
   cursor: pointer;
 }
 
-.sidebar {
-  width: 300px;
-  background-color: var(--gray);
-  color: var(--toolbar-fg);
-  padding: 15px;
-}
-
-.status-bar {
-  background-color: var(--toolbar-bg);
-  padding: 10px;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
 /* Estilos para las formas */
 .shape {
   cursor: move;

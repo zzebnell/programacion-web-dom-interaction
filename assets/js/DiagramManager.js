@@ -2,6 +2,7 @@ import Rectangle from './Rectangle.js';
 import Diamond from './Diamond.js';
 import Parallelogram from './Parallelogram.js';
 import Connection from './Connection.js';
+import PouchDBManager from './PouchDBManager.js';
 
 export default class DiagramManager {
   constructor(svgElement) {
@@ -16,16 +17,58 @@ export default class DiagramManager {
     this.shapeStartX = 0;
     this.shapeStartY = 0;
 
-    // Para el modo de conexión
     this.connectionStartShape = null;
     this.tempConnectionLine = null;
 
+    this.dbManager = new PouchDBManager();
+
     this.initEventListeners();
     this.initSVGMarkers();
+
+    this.loadDiagram();
+  }
+
+  importDiagram() {
+    console.log('Importando diagrama...');
+
+    const fileInput = document.getElementById('file-input-diagram');
+
+    fileInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const jsonData = JSON.parse(event.target.result);
+
+          if (!jsonData.shapes || !jsonData.connections) {
+            throw new Error('Formato de archivo inválido');
+          }
+
+          this.loadFromJSON(jsonData);
+          console.log('Diagrama importado correctamente');
+          this.showSimpleMessage('Diagrama importado');
+
+          fileInput.value = '';
+        } catch (error) {
+          console.error('Error al importar diagrama:', error);
+          this.showSimpleMessage('Error: archivo inválido');
+        }
+      };
+
+      reader.onerror = () => {
+        console.error('Error al leer el archivo');
+        this.showSimpleMessage('Error al leer archivo');
+      };
+
+      reader.readAsText(file);
+    };
+
+    fileInput.click();
   }
 
   initSVGMarkers() {
-    // Definir el marcador de flecha para las conexiones
     const defs = document.createElementNS(this.svg.namespaceURI, 'defs');
     const marker = document.createElementNS(this.svg.namespaceURI, 'marker');
     marker.setAttribute('id', 'arrowhead');
@@ -63,13 +106,23 @@ export default class DiagramManager {
       this.handleMouseLeave(e);
     });
 
-    // Prevenir el menú contextual
     this.svg.addEventListener('contextmenu', (e) => {
       e.preventDefault();
     });
+
+    this.svg.addEventListener('dblclick', (e) => {
+      this.handleDoubleClick(e);
+    });
+
+    this.svg.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
+
+    document.addEventListener('click', (e) => {
+      this.handleOutsideClick(e);
+    });
   }
 
-  // Métodos para agregar formas
   addProcess(x, y, text = "Proceso") {
     const process = new Rectangle(x, y, 120, 60, text);
     this.shapes.push(process);
@@ -91,23 +144,19 @@ export default class DiagramManager {
     return io;
   }
 
-  // Método para seleccionar herramienta
   setTool(tool) {
     this.selectedTool = tool;
 
-    // Limpiar estado de conexión temporal
     if (tool !== 'connect' && this.connectionStartShape) {
       this.connectionStartShape = null;
       this.removeTempConnection();
     }
 
-    // Si cambiamos de herramienta, deseleccionar la forma actual
     if (tool !== 'select' && this.selectedShape) {
       this.deselectShape();
     }
   }
 
-  // Método para manejar clics en el canvas
   handleCanvasClick(e) {
     const rect = this.svg.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -124,7 +173,6 @@ export default class DiagramManager {
         this.addInputOutput(x - 60, y - 30);
         break;
       case 'select':
-        // La selección se maneja en handleMouseDown/Up
         break;
       case 'delete':
         this.deleteShapeAt(x, y);
@@ -139,25 +187,21 @@ export default class DiagramManager {
     const shape = this.findShapeAt(x, y);
 
     if (!shape) {
-      // Clic fuera de forma - cancelar conexión
       this.connectionStartShape = null;
       this.removeTempConnection();
       return;
     }
 
     if (!this.connectionStartShape) {
-      // Primera forma seleccionada - inicio de conexión
       this.connectionStartShape = shape;
       shape.isSelected = true;
     } else {
-      // Segunda forma seleccionada - crear conexión
       if (this.connectionStartShape !== shape) {
         const connection = new Connection(this.connectionStartShape, shape);
         this.connections.push(connection);
         connection.draw(this.svg);
       }
 
-      // Limpiar estado de conexión
       this.connectionStartShape.isSelected = false;
       this.connectionStartShape = null;
       this.removeTempConnection();
@@ -186,12 +230,10 @@ export default class DiagramManager {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Actualizar conexión temporal en modo connect
     if (this.selectedTool === 'connect' && this.connectionStartShape) {
       this.updateTempConnection(x, y);
     }
 
-    // Manejar arrastre de formas
     if (this.isDragging && this.selectedShape) {
       const deltaX = x - this.dragStartX;
       const deltaY = y - this.dragStartY;
@@ -201,7 +243,6 @@ export default class DiagramManager {
         this.shapeStartY + deltaY
       );
 
-      // Actualizar todas las conexiones de esta forma
       this.updateShapeConnections(this.selectedShape);
     }
   }
@@ -214,13 +255,37 @@ export default class DiagramManager {
     this.stopDragging();
   }
 
+  handleDoubleClick(e) {
+    if (this.selectedTool !== 'select') return;
+
+    const rect = this.svg.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const shape = this.findShapeAt(x, y);
+
+    if (shape) {
+      e.stopPropagation();
+      shape.startEditing();
+    }
+  }
+
+  handleOutsideClick(e) {
+    if (!e.target.classList.contains('shape-text-editor')) {
+      this.shapes.forEach(shape => {
+        if (shape.cancelEditing) {
+          shape.cancelEditing();
+        }
+      });
+    }
+  }
+
   updateTempConnection(x, y) {
     if (!this.connectionStartShape) return;
 
     const startPoint = this.connectionStartShape.getConnectionPoints().bottom;
 
     if (!this.tempConnectionLine) {
-      // Crear línea temporal
       this.tempConnectionLine = document.createElementNS(this.svg.namespaceURI, 'line');
       this.tempConnectionLine.setAttribute("stroke", "#458588");
       this.tempConnectionLine.setAttribute("stroke-width", "2");
@@ -254,18 +319,15 @@ export default class DiagramManager {
     this.isDragging = false;
   }
 
-  // Método para encontrar forma por coordenadas
   findShapeAt(x, y) {
     return this.shapes.find(shape => shape.containsPoint(x, y));
   }
 
-  // Método para encontrar forma por ID
   findShapeById(id) {
     return this.shapes.find(shape => shape.id === id);
   }
 
   selectShape(shape) {
-    // Deseleccionar forma anterior
     if (this.selectedShape) {
       this.deselectShape();
     }
@@ -289,37 +351,31 @@ export default class DiagramManager {
   }
 
   deleteShape(shape) {
-    // Eliminar todas las conexiones de esta forma
     const connectionsToRemove = [...shape.connections];
     connectionsToRemove.forEach(connection => {
       this.deleteConnection(connection);
     });
 
-    // Remover del array
     const index = this.shapes.indexOf(shape);
     if (index > -1) {
       this.shapes.splice(index, 1);
     }
 
-    // Remover del DOM
     if (shape.element) {
       shape.element.remove();
     }
 
-    // Si era la forma seleccionada, deseleccionar
     if (this.selectedShape === shape) {
       this.selectedShape = null;
     }
   }
 
   deleteConnection(connection) {
-    // Remover del array
     const index = this.connections.indexOf(connection);
     if (index > -1) {
       this.connections.splice(index, 1);
     }
 
-    // Remover del DOM y limpiar referencias
     connection.remove();
   }
 
@@ -335,7 +391,6 @@ export default class DiagramManager {
     });
   }
 
-  // Método para serializar el diagrama completo
   toJSON() {
     return {
       shapes: this.shapes.map(shape => shape.toJSON()),
@@ -343,32 +398,32 @@ export default class DiagramManager {
     };
   }
 
-  // Métodos para guardar/cargar
-  saveDiagram() {
-    console.log('Guardando diagrama...');
-    const data = this.toJSON();
-    localStorage.setItem('flowchart-data', JSON.stringify(data));
-    console.log('Diagrama guardado en localStorage');
+  async saveDiagram() {
+    try {
+      const data = this.toJSON();
+      await this.dbManager.saveDiagram(data);
+      console.log('Diagrama guardado en PouchDB');
+      this.showSimpleMessage('Diagrama guardado');
+    } catch (error) {
+      console.error('Error al guardar diagrama:', error);
+      this.showSimpleMessage('Error al guardar');
+    }
   }
 
-  loadDiagram() {
-    console.log('Cargando diagrama...');
-    const data = localStorage.getItem('flowchart-data');
-    if (data) {
-      try {
-        const parsedData = JSON.parse(data);
-        this.loadFromJSON(parsedData);
-        console.log('Diagrama cargado desde localStorage');
-      } catch (error) {
-        console.error('Error al cargar el diagrama:', error);
+  async loadDiagram() {
+    try {
+      const diagramData = await this.dbManager.loadDiagram();
+      if (diagramData) {
+        this.loadFromJSON(diagramData);
+        console.log('Diagrama cargado desde PouchDB');
+        this.showSimpleMessage('Diagrama cargado');
       }
-    } else {
-      console.log('No hay datos guardados');
+    } catch (error) {
+      console.error('Error al cargar diagrama:', error);
     }
   }
 
   loadFromJSON(data) {
-    // Limpiar diagrama actual
     this.shapes.forEach(shape => {
       if (shape.element) shape.element.remove();
     });
@@ -380,7 +435,6 @@ export default class DiagramManager {
     this.connections = [];
     this.selectedShape = null;
 
-    // Cargar formas
     data.shapes.forEach(shapeData => {
       let shape;
       switch (shapeData.type) {
@@ -396,14 +450,12 @@ export default class DiagramManager {
       }
 
       if (shape) {
-        // Restaurar ID original
         shape.id = shapeData.id;
         this.shapes.push(shape);
         shape.draw(this.svg);
       }
     });
 
-    // Cargar conexiones
     data.connections.forEach(connData => {
       const source = this.findShapeById(connData.source);
       const target = this.findShapeById(connData.target);
@@ -422,12 +474,34 @@ export default class DiagramManager {
     const dataStr = JSON.stringify(data, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
 
-    // Crear enlace de descarga
     const link = document.createElement('a');
     link.href = URL.createObjectURL(dataBlob);
     link.download = 'diagrama-flujo.json';
     link.click();
 
     console.log('Diagrama exportado como JSON');
+  }
+
+  showSimpleMessage(message) {
+    console.log(message);
+    const msg = document.createElement('div');
+    msg.textContent = message;
+    msg.style.cssText = `
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: #98971a;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    font-size: 14px;
+    `;
+    document.body.appendChild(msg);
+    setTimeout(() => {
+      if (msg.parentNode) {
+        msg.parentNode.removeChild(msg);
+      }
+    }, 2000);
   }
 }

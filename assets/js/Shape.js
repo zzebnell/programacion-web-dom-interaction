@@ -28,44 +28,140 @@ export default class Shape {
     return 'shape-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
   }
 
-  // Getters
-  get x() { return this.#x; }
-  get y() { return this.#y; }
-  get width() { return this.#width; }
-  get height() { return this.#height; }
-  get text() { return this.#text; }
-  get type() { return this.#type; }
-  get id() { return this.#id; }
-  get element() { return this.#element; }
-  get connections() { return this.#connections; }
-  get isSelected() { return this.#isSelected; }
+  get x() {
+    return this.#x;
+  }
 
-  // Setters
+  get y() {
+    return this.#y;
+  }
+
+  get width() {
+    return this.#width;
+  }
+
+  get height() {
+    return this.#height;
+  }
+
+  get text() {
+    return this.#text;
+  }
+
+  get type() {
+    return this.#type;
+  }
+
+  get id() {
+    return this.#id;
+  }
+
+  get element() {
+    return this.#element;
+  }
+
+  get connections() {
+    return this.#connections;
+  }
+
+  get isSelected() {
+    return this.#isSelected;
+  }
+
   set x(value) {
     this.#x = value;
     this.updateElementPosition();
   }
+
   set y(value) {
     this.#y = value;
     this.updateElementPosition();
   }
+
   set text(value) {
     this.#text = value;
     this.updateElementText();
   }
+
   set element(reference) {
     this.#element = reference;
   }
+
   set isSelected(value) {
     this.#isSelected = value;
     this.updateSelectionStyle();
   }
+
   set id(value) {
     this.#id = value;
   }
 
+  startEditing() {
+    if (!this.element) return;
 
-  // Métodos para conexiones
+    const textElement = this.element.querySelector('.shape-text');
+    if (!textElement) return;
+
+    textElement.style.visibility = 'hidden';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = this.text;
+    input.className = 'shape-text-editor';
+    input.style.position = 'absolute';
+    input.style.left = `${this.x + 10}px`;
+    input.style.top = `${this.y + 10}px`;
+    input.style.width = `${this.width - 20}px`;
+    input.style.height = `${this.height - 20}px`;
+    input.style.border = '2px solid #458588';
+    input.style.background = 'white';
+    input.style.borderRadius = '3px';
+    input.style.padding = '5px';
+    input.style.fontSize = '14px';
+    input.style.fontFamily = 'inherit';
+    input.style.textAlign = 'center';
+    input.style.zIndex = '1000';
+
+    document.body.appendChild(input);
+    input.focus();
+    input.select();
+
+    const handleConfirm = () => {
+      this.text = input.value.trim() || this.text; // Mantener texto anterior si está vacío
+      input.remove();
+      textElement.style.visibility = 'visible';
+    };
+
+    const handleCancel = () => {
+      input.remove();
+      textElement.style.visibility = 'visible';
+    };
+
+    input.addEventListener('blur', handleConfirm);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        handleConfirm();
+      } else if (e.key === 'Escape') {
+        handleCancel();
+      }
+    });
+
+    this._textInput = input;
+  }
+
+  cancelEditing() {
+    if (this._textInput) {
+      this._textInput.remove();
+      this._textInput = null;
+
+      const textElement = this.element.querySelector('.shape-text');
+      if (textElement) {
+        textElement.style.visibility = 'visible';
+      }
+    }
+  }
+
+
   addConnection(connection) {
     this.#connections.push(connection);
   }
@@ -77,7 +173,6 @@ export default class Shape {
     }
   }
 
-  // Método para obtener puntos de conexión
   getConnectionPoints() {
     const centerX = this.#x + this.#width / 2;
     const centerY = this.#y + this.#height / 2;
@@ -90,7 +185,6 @@ export default class Shape {
     };
   }
 
-  // Método para obtener el centro de la forma
   getCenter() {
     return {
       x: this.#x + this.#width / 2,
@@ -98,7 +192,6 @@ export default class Shape {
     };
   }
 
-  // Método para verificar si un punto está dentro de la forma
   containsPoint(x, y) {
     return x >= this.#x &&
       x <= this.#x + this.#width &&
@@ -106,15 +199,10 @@ export default class Shape {
       y <= this.#y + this.#height;
   }
 
-  // Método para actualizar posición visual
   updateElementPosition() {
     if (!this.#element) return;
-
-    // Esta implementación depende de la forma específica
-    // Se implementará en las subclases
   }
 
-  // Método para actualizar texto visual
   updateElementText() {
     if (!this.#element) return;
 
@@ -124,7 +212,6 @@ export default class Shape {
     }
   }
 
-  // Método para actualizar estilo de selección
   updateSelectionStyle() {
     if (!this.#element) return;
 
@@ -142,19 +229,16 @@ export default class Shape {
     }
   }
 
-  // Método para dibujar (debe ser implementado por las subclases)
   draw(svg) {
     throw new Error("Método draw debe ser implementado por la subclase");
   }
 
-  // Método para actualizar posición
   updatePosition(newX, newY) {
     this.#x = newX;
     this.#y = newY;
     this.updateElementPosition();
   }
 
-  // Método para serializar la forma
   toJSON() {
     return {
       id: this.#id,

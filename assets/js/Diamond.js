@@ -9,7 +9,6 @@ export default class Diamond extends Shape {
     const centerX = this.x + this.width / 2;
     const centerY = this.y + this.height / 2;
 
-    // Crear rombo (diamond)
     const diamond = document.createElementNS(this.namespace, 'polygon');
     const points = this.getDiamondPoints();
     diamond.setAttribute("points", points.map(p => p.join(',')).join(' '));
@@ -19,7 +18,6 @@ export default class Diamond extends Shape {
     diamond.setAttribute("class", "shape decision");
     diamond.setAttribute("data-id", this.id);
 
-    // Crear texto
     const textElement = document.createElementNS(this.namespace, 'text');
     textElement.setAttribute("x", centerX);
     textElement.setAttribute("y", centerY);

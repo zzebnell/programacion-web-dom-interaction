@@ -6,6 +6,7 @@
   <meta charset="utf-8">
   <title>Diagram Editor</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/pouchdb@9.0.0/dist/pouchdb.min.js"></script>
 </head>
 
 <body>
@@ -53,6 +54,10 @@
         <span class="tool-icon">📥</span>
         <span class="tool-label">Exportar</span>
       </button>
+      <button id="btn-import" class="tool-btn" data-tool="import" title="Importar JSON">
+        <span class="tool-icon">📤</span>
+        <span class="tool-label">Importar</span>
+      </button>
     </div>
   </div>
 
@@ -61,14 +66,9 @@
       <svg id="svg-canvas">
       </svg>
     </div>
-
-    <div class="sidebar">
-      <div class="status-bar">
-        <span id="current-tool">Herramienta: Seleccionar</span>
-      </div>
-    </div>
   </div>
 
+  <input type="file" id="file-input-diagram" accept=".json" style="display: none;">
   <script src="assets/js/App.js" type="module"></script>
 </body>
 
